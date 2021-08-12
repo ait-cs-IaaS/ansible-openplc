@@ -5,6 +5,7 @@
   ansible.builtin.git:
     repo: "https://github.com/thiagoralves/OpenPLC_v3.git"
     dest: "{{ openplc_deploy_dir }}"
+    update: no
 
 - name: check to see if pip is already installed
   become: yes
