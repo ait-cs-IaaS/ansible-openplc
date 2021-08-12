@@ -22,6 +22,7 @@
     src: "{{ item }}"
     dest: "{{ openplc_deploy_dir }}/webserver/st_files/"
   loop: "{{ openplc_st_files }}"
+  notify: restart openplc
   
 - name: copy openplc config files to remote host 
   become: yes
@@ -29,10 +30,19 @@
     src: "{{ item.src }}"
     dest: "{{ openplc_deploy_dir }}/{{ item.dest }}"
   loop: "{{ openplc_config_files }}"
-  
+  notify: restart openplc
+
 - name: copy openplc template files to remote host 
   become: yes
   template:
     src: "{{ item.src }}"
     dest: "{{ openplc_deploy_dir }}/{{ item.dest }}"
   loop: "{{ openplc_config_templates }}"
+  notify: restart openplc
+    
+- name: ensure openplc is running 
+  become: yes
+  service:
+    name: openplc
+    state: started
+    enabled: yes
