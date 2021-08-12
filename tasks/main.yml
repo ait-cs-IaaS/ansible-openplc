@@ -37,7 +37,7 @@
 
 - name: run ./install.sh to install OpenPLC_v3
   become: yes
-  ansible.builtin.script: "install.sh linux"
+  script: "install.sh linux"
   args:
     chdir: "{{ openplc_deploy_dir }}"
   
