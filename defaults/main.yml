@@ -1,0 +1,13 @@
+---
+# defaults file for openplc
+openplc_deploy_dir: /opt/OpenPLC_v3
+openplc_st_files: [] # List of files
+openplc_config_files: [] # List of dicts: src, dest
+openplc_config_templates: [] # List of dicts: src, dest
+
+# [[config files]] 
+# webserver/VARIABLES.csv
+# webserver/mbconfig.cfg
+
+# [[config templates]]
+# webserver/core/psm/main.py
