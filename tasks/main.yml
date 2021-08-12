@@ -37,7 +37,9 @@
 
 - name: run ./install.sh to install OpenPLC_v3
   become: yes
-  ansible.builtin.script: "{{ openplc_deploy_dir }}/install.sh linux"
+  ansible.builtin.script: "install.sh linux"
+  args:
+    chdir: "{{ openplc_deploy_dir }}"
   
 - name: copy st files to remote host 
   become: yes
