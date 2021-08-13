@@ -36,11 +36,17 @@
     requirements: "{{ openplc_deploy_dir }}/requirements.txt"
     executable: pip2
 
+- name: Check install marker
+  stat:
+    path: "{{ openplc_deploy_dir }}/start_openplc.sh"
+  register: openplc_installed_marker
+
 - name: run ./install.sh to install OpenPLC_v3
   become: yes
   command: "./install.sh linux"
   args:
     chdir: "{{ openplc_deploy_dir }}"
+  when: not openplc_installed_marker.stat.exists or openplc_install_force
   
 - name: copy st files to remote host 
   become: yes
@@ -65,6 +71,26 @@
     dest: "{{ openplc_deploy_dir }}/{{ item.dest }}"
   loop: "{{ openplc_config_templates }}"
   notify: restart openplc
+
+- name: Copy over users CSV file
+  become: yes
+  template:
+    src: "{{ openplc_users_csv_template }}"
+    dest: "{{ openplc_users_csv_template_dest }}"
+  when: openplc_users | length > 0
+
+
+- name: Import openplc users table
+  become: yes
+  command: 'sqlite3 "{{ openplc_deploy_dir }}/webserver/openplc.db" -cmd "delete from Users" ".mode csv" ".import {{ openplc_users_csv_template_dest }} Users"'
+  when: openplc_users | length > 0
+
+- name: Remove users CSV file
+  become: yes
+  file:
+    path: "{{ openplc_users_csv_template_dest }}"
+    state: absent
+  when: openplc_users | length > 0
     
 - name: ensure openplc is running 
   become: yes
