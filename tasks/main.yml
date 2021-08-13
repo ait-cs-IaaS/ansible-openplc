@@ -82,7 +82,7 @@
 
 - name: Import openplc users table
   become: yes
-  command: 'sqlite3 openplc.db -cmd "delete from Users" ".mode csv" ".import {{ openplc_users_csv_template_dest }} Users"'
+  command: 'sqlite3 "{{ openplc_deploy_dir }}/webserver/openplc.db" -cmd "delete from Users" ".mode csv" ".import {{ openplc_users_csv_template_dest }} Users"'
   when: openplc_users | length > 0
 
 - name: Remove users CSV file
