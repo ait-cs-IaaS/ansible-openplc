@@ -65,6 +65,26 @@
     dest: "{{ openplc_deploy_dir }}/{{ item.dest }}"
   loop: "{{ openplc_config_templates }}"
   notify: restart openplc
+
+- name: Copy over users CSV file
+  become: yes
+  template:
+    src: "{{ openplc_users_csv_template }}"
+    dest: "{{ openplc_users_csv_template_dest }}"
+  when: openplc_users | length > 0
+
+
+- name: Import openplc users table
+  become: yes
+  command: 'sqlite3 openplc.db -cmd "delete from Users" ".mode csv" ".import {{ openplc_users_csv_template_dest }} Users"'
+  when: openplc_users | length > 0
+
+- name: Remove users CSV file
+  become: yes
+  file:
+    path: "{{ openplc_users_csv_template_dest }}"
+    state: absent
+  when: openplc_users | length > 0
     
 - name: ensure openplc is running 
   become: yes
