@@ -36,11 +36,17 @@
     requirements: "{{ openplc_deploy_dir }}/requirements.txt"
     executable: pip2
 
+- name: Check install marker
+  stat:
+    path: "{{ openplc_deploy_dir }}/start_openplc.sh"
+  register: openplc_installed_marker
+
 - name: run ./install.sh to install OpenPLC_v3
   become: yes
   command: "./install.sh linux"
   args:
     chdir: "{{ openplc_deploy_dir }}"
+  when: not openplc_installed_marker.stat.exists or openplc_install_force
   
 - name: copy st files to remote host 
   become: yes
