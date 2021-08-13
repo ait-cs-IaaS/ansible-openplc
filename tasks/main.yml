@@ -25,7 +25,7 @@
     command: "python2 /tmp/get-pip.py"
   
   - name: delete get-pip.py
-    file: 
+    file:
       state: absent 
       path: /tmp/get-pip.py
   when: pip_is_installed.rc != 0
@@ -35,6 +35,20 @@
   pip:
     requirements: "{{ openplc_deploy_dir }}/requirements.txt"
     executable: pip2
+
+- name: install pip3
+  become: yes
+  apt:
+    name: python3-pip
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: install pip requirements 
+  become: yes
+  pip:
+    name: "pymodbus"
+    executable: pip3
 
 - name: Check install marker
   stat:
