@@ -69,6 +69,30 @@
     dest: "{{ openplc_deploy_dir }}/webserver/st_files/"
   loop: "{{ openplc_st_files }}"
   notify: restart openplc
+
+- name: check hardware layer
+  become: yes
+  stat:
+    path: "{{ openplc_deploy_dir }}/webserver/scripts/openplc_driver"
+    get_checksum: yes
+    checksum_algorithm: md5
+  register: _hardware_layer
+
+- name: configure hardware layer
+  become: yes
+  command: ./change_hardware_layer.sh "{{ openplc_hardware_layer }}"
+  when: _hardware_layer.stat.checksum != openplc_hardware_layer_md5
+  notify: restart openplc
+  args:
+    chdir: "{{ openplc_deploy_dir }}/webserver/scripts"
+
+- name: compile active PLC program
+  become: yes
+  command: ./compile_program.sh "{{ openplc_active_program }}"
+  when: openplc_active_program is defined and openplc_active_program | length > 0
+  notify: restart openplc
+  args:
+    chdir: "{{ openplc_deploy_dir }}/webserver/scripts"
   
 - name: copy openplc config files to remote host 
   become: yes
