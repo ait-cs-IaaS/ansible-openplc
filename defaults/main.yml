@@ -9,3 +9,6 @@ openplc_users: [] # list of user dicts
 
 openplc_users_csv_template: users.csv.j2
 openplc_users_csv_template_dest: /tmp/openplc_users.csv
+
+openplc_hardware_layer: psm_linux
+openplc_hardware_layer_md5: "{{ (openplc_hardware_layer + '\n') | hash('md5') }}"
