@@ -9,7 +9,7 @@
 
 - name: check to see if pip is already installed
   become: yes
-  command: "pip --version"
+  command: "pip2 --version"
   ignore_errors: true
   register: pip_is_installed
   changed_when: false
