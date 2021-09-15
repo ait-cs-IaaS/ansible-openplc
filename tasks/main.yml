@@ -1,5 +1,10 @@
 ---
 # tasks file for openplc
+- name: Install python2
+  become: yes
+  apt:
+    name: "python2.7"
+
 - name: clone OpenPLC repository
   become: yes
   ansible.builtin.git:
@@ -22,7 +27,7 @@
 
   - name: install pip
     become: yes
-    command: "python2 /tmp/get-pip.py"
+    command: "python2.7 /tmp/get-pip.py"
 
   - name: delete get-pip.py
     file:
