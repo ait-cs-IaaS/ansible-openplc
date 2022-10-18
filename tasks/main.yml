@@ -1,164 +1,173 @@
 ---
 # tasks file for openplc
 - name: Install python2
-  become: yes
-  apt:
-    name: "python2.7"
+  become: true
+  ansible.builtin.apt:
+    name: python2.7
 
-- name: clone OpenPLC repository
-  become: yes
+- name: Clone OpenPLC repository
+  become: true
   ansible.builtin.git:
-    repo: "https://github.com/thiagoralves/OpenPLC_v3.git"
+    repo: https://github.com/thiagoralves/OpenPLC_v3.git
     dest: "{{ openplc_deploy_dir }}"
-    update: no
+    update: false
 
-- name: check to see if pip is already installed
-  become: yes
-  command: "pip2 --version"
+- name: Check to see if pip is already installed
+  become: true
+  ansible.builtin.command:
+    cmd: pip2 --version
   ignore_errors: true
   register: pip_is_installed
   changed_when: false
 
-- block:
-  - name: download get-pip.py
-    get_url:
-      url: https://bootstrap.pypa.io/pip/2.7/get-pip.py
-      dest: /tmp/get-pip.py
+- name: Install PIP
+  block:
+    - name: Download get-pip.py
+      ansible.builtin.get_url:
+        url: https://bootstrap.pypa.io/pip/2.7/get-pip.py
+        dest: /tmp/get-pip.py
 
-  - name: install pip
-    become: yes
-    command: "python2.7 /tmp/get-pip.py"
+    - name: Install pip
+      become: true
+      ansible.builtin.command:
+        cmd: python2.7 /tmp/get-pip.py
 
-  - name: delete get-pip.py
-    file:
-      state: absent
-      path: /tmp/get-pip.py
+    - name: Delete get-pip.py
+      ansible.builtin.file:
+        state: absent
+        path: /tmp/get-pip.py
   when: pip_is_installed.rc != 0
 
-- name: install pip requirements
-  become: yes
-  pip:
+- name: Install pip requirements
+  become: true
+  ansible.builtin.pip:
     requirements: "{{ openplc_deploy_dir }}/requirements.txt"
     executable: pip2
 
-- name: check to see if pip3 is already installed
-  become: yes
-  command: "pip3 --version"
+- name: Check to see if pip3 is already installed
+  become: true
+  ansible.builtin.command:
+    cmd: pip3 --version
   ignore_errors: true
   register: pip3_is_installed
   changed_when: false
 
-- block:
-  - name: download get-pip3.py
-    get_url:
-      url: https://bootstrap.pypa.io/pip/get-pip.py
-      dest: /tmp/get-pip3.py
+- name: Install PIP3
+  block:
+    - name: Download get-pip3.py
+      ansible.builtin.get_url:
+        url: https://bootstrap.pypa.io/pip/get-pip.py
+        dest: /tmp/get-pip3.py
 
-  - name: install pip
-    become: yes
-    command: "python3 /tmp/get-pip3.py"
+    - name: Install pip
+      become: true
+      ansible.builtin.command:
+        cmd: python3 /tmp/get-pip3.py
 
-  - name: delete get-pip3.py
-    file:
-      state: absent
-      path: /tmp/get-pip3.py
+    - name: Delete get-pip3.py
+      ansible.builtin.file:
+        state: absent
+        path: /tmp/get-pip3.py
   when: pip3_is_installed.rc != 0
 
-- name: install pip requirements
-  become: yes
-  pip:
+- name: Install pip requirements
+  become: true
+  ansible.builtin.pip:
     requirements: "{{ openplc_deploy_dir }}/requirements.txt"
     executable: pip2
 
-- name: install pip3 requirements
-  become: yes
-  pip:
-    name: "pymodbus"
+- name: Install pip3 requirements
+  become: true
+  ansible.builtin.pip:
+    name: pymodbus
+    version: v2.5.3
     executable: pip3
 
 - name: Check install marker
-  stat:
+  ansible.builtin.stat:
     path: "{{ openplc_deploy_dir }}/start_openplc.sh"
   register: openplc_installed_marker
 
-- name: run ./install.sh to install OpenPLC_v3
-  become: yes
-  command: "./install.sh linux"
+- name: Run ./install.sh to install OpenPLC_v3
+  become: true
+  ansible.builtin.command: ./install.sh linux
   args:
     chdir: "{{ openplc_deploy_dir }}"
   when: not openplc_installed_marker.stat.exists or openplc_install_force
 
-- name: copy st files to remote host
-  become: yes
-  copy:
+- name: Copy st files to remote host
+  become: true
+  ansible.builtin.copy:
     src: "{{ item }}"
     dest: "{{ openplc_deploy_dir }}/webserver/st_files/"
   loop: "{{ openplc_st_files }}"
   notify: restart openplc
 
-- name: check hardware layer
-  become: yes
-  stat:
+- name: Check hardware layer
+  become: true
+  ansible.builtin.stat:
     path: "{{ openplc_deploy_dir }}/webserver/scripts/openplc_driver"
-    get_checksum: yes
+    get_checksum: true
     checksum_algorithm: md5
   register: _hardware_layer
 
-- name: configure hardware layer
-  become: yes
-  command: ./change_hardware_layer.sh "{{ openplc_hardware_layer }}"
+- name: Configure hardware layer
+  become: true
+  ansible.builtin.command:
+    cmd: ./change_hardware_layer.sh "{{ openplc_hardware_layer }}"
   when: _hardware_layer.stat.checksum != openplc_hardware_layer_md5
   notify: restart openplc
   args:
     chdir: "{{ openplc_deploy_dir }}/webserver/scripts"
 
-- name: compile active PLC program
-  become: yes
-  command: ./compile_program.sh "{{ openplc_active_program }}"
+- name: Compile active PLC program
+  become: true
+  ansible.builtin.command:
+    cmd: ./compile_program.sh "{{ openplc_active_program }}"
   when: openplc_active_program is defined and openplc_active_program | length > 0
   notify: restart openplc
   args:
     chdir: "{{ openplc_deploy_dir }}/webserver/scripts"
 
-- name: copy openplc config files to remote host
-  become: yes
-  copy:
+- name: Copy openplc config files to remote host
+  become: true
+  ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "{{ openplc_deploy_dir }}/{{ item.dest }}"
   loop: "{{ openplc_config_files }}"
   notify: restart openplc
 
-- name: copy openplc template files to remote host
-  become: yes
-  template:
+- name: Copy openplc template files to remote host
+  become: true
+  ansible.builtin.template:
     src: "{{ item.src }}"
     dest: "{{ openplc_deploy_dir }}/{{ item.dest }}"
   loop: "{{ openplc_config_templates }}"
   notify: restart openplc
 
 - name: Copy over users CSV file
-  become: yes
-  template:
+  become: true
+  ansible.builtin.template:
     src: "{{ openplc_users_csv_template }}"
     dest: "{{ openplc_users_csv_template_dest }}"
   when: openplc_users | length > 0
 
-
 - name: Import openplc users table
-  become: yes
-  command: 'sqlite3 "{{ openplc_deploy_dir }}/webserver/openplc.db" -cmd "delete from Users" ".mode csv" ".import {{ openplc_users_csv_template_dest }} Users"'
+  become: true
+  ansible.builtin.command:
+    cmd: sqlite3 "{{ openplc_deploy_dir }}/webserver/openplc.db" -cmd "delete from Users" ".mode csv" ".import {{ openplc_users_csv_template_dest }} Users"
   when: openplc_users | length > 0
 
 - name: Remove users CSV file
-  become: yes
-  file:
+  become: true
+  ansible.builtin.file:
     path: "{{ openplc_users_csv_template_dest }}"
     state: absent
   when: openplc_users | length > 0
 
-- name: ensure openplc is running
-  become: yes
-  service:
+- name: Ensure openplc is running
+  become: true
+  ansible.builtin.service:
     name: openplc
     state: started
-    enabled: yes
+    enabled: true

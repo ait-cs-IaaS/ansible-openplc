@@ -1,19 +1,19 @@
 ---
 # handlers file for openplc
-- name: stop openplc
-  become: yes
+- name: Stop openplc
+  become: true
   service:
     name: openplc
     state: stopped
   listen: restart openplc
 
-- name: sleep between stop and start
+- name: Sleep between stop and start
   pause:
     seconds: "{{ openplc_restart_sleep_seconds }}"
   listen: restart openplc
 
-- name: start openplc
-  become: yes
+- name: Start openplc
+  become: true
   service:
     name: openplc
     state: started
