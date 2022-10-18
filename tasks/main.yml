@@ -76,11 +76,16 @@
     requirements: "{{ openplc_deploy_dir }}/requirements.txt"
     executable: pip2
 
-- name: Install pip3 requirements
+- name: Install pip3 pyserial-asyncio
   become: true
   ansible.builtin.pip:
-    name: pymodbus
-    version: v2.5.3
+    name: pyserial-asyncio
+    executable: pip3
+
+- name: Install pip3 pymodbus
+  become: true
+  ansible.builtin.pip:
+    name: pymodbus==v2.5.3
     executable: pip3
 
 - name: Check install marker
