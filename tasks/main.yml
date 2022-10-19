@@ -100,9 +100,9 @@
     chdir: "{{ openplc_deploy_dir }}"
   when: not openplc_installed_marker.stat.exists or openplc_install_force
 
-- name: Copy st files to remote host
+- name: Copy st template files to remote host
   become: true
-  ansible.builtin.copy:
+  ansible.builtin.template:
     src: "{{ item }}"
     dest: "{{ openplc_deploy_dir }}/webserver/st_files/"
   loop: "{{ openplc_st_files }}"
