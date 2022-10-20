@@ -103,8 +103,8 @@
 - name: Copy st template files to remote host
   become: true
   ansible.builtin.template:
-    src: "{{ item }}"
-    dest: "{{ openplc_deploy_dir }}/webserver/st_files/"
+    src: "{{ item.src }}"
+    dest: "{{ openplc_deploy_dir }}/webserver/st_files/{{ item.dest }}"
   loop: "{{ openplc_st_files }}"
   notify: restart openplc
 
