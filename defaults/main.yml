@@ -7,6 +7,7 @@ openplc_st_files: [] # List of files
 openplc_config_files: [] # List of dicts: src, dest
 openplc_config_templates: [] # List of dicts: src, dest
 openplc_users: [] # list of user dicts
+openplc_user: openplc
 
 openplc_users_csv_template: users.csv.j2
 openplc_users_csv_template_dest: /tmp/openplc_users.csv

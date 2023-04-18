@@ -1,20 +1,6 @@
 ---
-# handlers file for openplc
-- name: Stop openplc
+- name: restart openplc
   become: true
-  service:
+  ansible.builtin.service:
     name: openplc
-    state: stopped
-  listen: restart openplc
-
-- name: Sleep between stop and start
-  pause:
-    seconds: "{{ openplc_restart_sleep_seconds }}"
-  listen: restart openplc
-
-- name: Start openplc
-  become: true
-  service:
-    name: openplc
-    state: started
-  listen: restart openplc
+    state: restarted

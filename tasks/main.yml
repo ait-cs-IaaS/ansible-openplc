@@ -1,9 +1,10 @@
 ---
 # tasks file for openplc
-- name: Install python2
+- name: Install python3 and pip3
   become: true
   ansible.builtin.apt:
-    name: python2.7
+    name: python3, python3-pip
+    update_cache: true
 
 - name: Clone OpenPLC repository
   become: true
@@ -11,82 +12,13 @@
     repo: https://github.com/thiagoralves/OpenPLC_v3.git
     dest: "{{ openplc_deploy_dir }}"
     update: false
-
-- name: Check to see if pip is already installed
-  become: true
-  ansible.builtin.command:
-    cmd: pip2 --version
-  ignore_errors: true
-  register: pip_is_installed
-  changed_when: false
-
-- name: Install PIP
-  block:
-    - name: Download get-pip.py
-      ansible.builtin.get_url:
-        url: https://bootstrap.pypa.io/pip/2.7/get-pip.py
-        dest: /tmp/get-pip.py
-
-    - name: Install pip
-      become: true
-      ansible.builtin.command:
-        cmd: python2.7 /tmp/get-pip.py
-
-    - name: Delete get-pip.py
-      ansible.builtin.file:
-        state: absent
-        path: /tmp/get-pip.py
-  when: pip_is_installed.rc != 0
+  tags: [install]
 
 - name: Install pip requirements
   become: true
   ansible.builtin.pip:
     requirements: "{{ openplc_deploy_dir }}/requirements.txt"
-    executable: pip2
-
-- name: Check to see if pip3 is already installed
-  become: true
-  ansible.builtin.command:
-    cmd: pip3 --version
-  ignore_errors: true
-  register: pip3_is_installed
-  changed_when: false
-
-- name: Install PIP3
-  block:
-    - name: Download get-pip3.py
-      ansible.builtin.get_url:
-        url: https://bootstrap.pypa.io/pip/get-pip.py
-        dest: /tmp/get-pip3.py
-
-    - name: Install pip
-      become: true
-      ansible.builtin.command:
-        cmd: python3 /tmp/get-pip3.py
-
-    - name: Delete get-pip3.py
-      ansible.builtin.file:
-        state: absent
-        path: /tmp/get-pip3.py
-  when: pip3_is_installed.rc != 0
-
-- name: Install pip requirements
-  become: true
-  ansible.builtin.pip:
-    requirements: "{{ openplc_deploy_dir }}/requirements.txt"
-    executable: pip2
-
-- name: Install pip3 pyserial-asyncio
-  become: true
-  ansible.builtin.pip:
-    name: pyserial-asyncio
-    executable: pip3
-
-- name: Install pip3 pymodbus
-  become: true
-  ansible.builtin.pip:
-    name: pymodbus==v2.5.3
-    executable: pip3
+  tags: [install]
 
 - name: Check install marker
   ansible.builtin.stat:
@@ -99,12 +31,13 @@
   args:
     chdir: "{{ openplc_deploy_dir }}"
   when: not openplc_installed_marker.stat.exists or openplc_install_force
+  tags: [install]
 
 - name: Copy st files to remote host
   become: true
-  ansible.builtin.copy:
-    src: "{{ item }}"
-    dest: "{{ openplc_deploy_dir }}/webserver/st_files/"
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ openplc_deploy_dir }}/webserver/st_files/{{ item.dest }}"
   loop: "{{ openplc_st_files }}"
   notify: restart openplc
 
