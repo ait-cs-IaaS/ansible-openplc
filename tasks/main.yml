@@ -33,7 +33,7 @@
   when: not openplc_installed_marker.stat.exists or openplc_install_force
   tags: [install]
 
-- name: Copy st files to remote host
+- name: Copy st template files to remote host
   become: true
   ansible.builtin.template:
     src: "{{ item.src }}"
