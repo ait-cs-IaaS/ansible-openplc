@@ -1,6 +1,6 @@
 ---
-- name: restart openplc
+- name: Restart openplc
   become: true
   ansible.builtin.service:
-    name: openplc
-    state: restarted
+      name: openplc
+      state: restarted
