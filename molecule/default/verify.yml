@@ -1,0 +1,8 @@
+---
+
+- name: Verify
+  hosts: openplc_group
+  tasks:
+    - name: Validate
+      ansible.builtin.assert:
+        that: true
