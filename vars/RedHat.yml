@@ -1,0 +1,10 @@
+---
+
+openplc_deps:
+  - python3
+  - python3-pip
+  - git
+  - dh-autoreconf
+  - make
+  - bison
+  - gcc-c++
