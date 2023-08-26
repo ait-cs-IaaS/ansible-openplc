@@ -1,6 +1,9 @@
 ---
 # tasks file for openplc
 
+- name: Include osfamily-specific variables
+  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+
 - name: Set fact is_container
   ansible.builtin.set_fact:
     is_container: true
@@ -18,13 +21,7 @@
 - name: Install dependencies
   become: true
   ansible.builtin.package:
-    name:
-      - python3
-      - python3-pip
-      - git
-      - dh-autoreconf
-      - make
-      - bison
+    name: "{{ openplc_deps }}"
   register: pkg_result
   until: pkg_result is success
 
