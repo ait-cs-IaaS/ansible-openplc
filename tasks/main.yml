@@ -1,18 +1,37 @@
 ---
 # tasks file for openplc
-- name: Install python3 and pip3
-  become: true
+
+- name: Set fact is_container
+  ansible.builtin.set_fact:
+    is_container: true
+  when: >
+    (ansible_virtualization_type is defined and
+      (ansible_virtualization_type == "docker" or ansible_virtualization_type == "containerd")
+    )
+
+- name: Debian | Update apt cache
   ansible.builtin.apt:
-      name: python3, python3-pip
-      update_cache: true
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_os_family == 'Debian'
+
+- name: Install dependencies
+  become: true
+  ansible.builtin.package:
+    name:
+      - python3
+      - python3-pip
+      - git
+  register: pkg_result
+  until: pkg_result is success
 
 - name: Clone OpenPLC repository
   become: true
   ansible.builtin.git:
-      repo: https://github.com/thiagoralves/OpenPLC_v3.git
-      dest: '{{ openplc_deploy_dir }}'
-      version: master
-      update: false
+    repo: https://github.com/thiagoralves/OpenPLC_v3.git
+    dest: '{{ openplc_deploy_dir }}'
+    version: "{{ openplc_version }}"
+    update: false
   tags: [install]
 
 - name: Install pip requirements
@@ -21,18 +40,12 @@
       requirements: '{{ openplc_deploy_dir }}/requirements.txt'
   tags: [install]
 
-- name: Check install marker
-  ansible.builtin.stat:
-      path: '{{ openplc_deploy_dir }}/start_openplc.sh'
-  register: openplc_installed_marker
-
 - name: Run ./install.sh to install OpenPLC_v3
   become: true
   ansible.builtin.command: ./install.sh linux
   args:
-      chdir: '{{ openplc_deploy_dir }}'
-  when: not openplc_installed_marker.stat.exists or openplc_install_force
-  changed_when: false
+    chdir: '{{ openplc_deploy_dir }}'
+    creates: "{{ openplc_deploy_dir }}/start_openplc.sh"
   tags: [install]
 
 - name: Copy st template files to remote host
@@ -119,6 +132,8 @@
 - name: Ensure openplc is running
   become: true
   ansible.builtin.service:
-      name: openplc
-      state: started
-      enabled: true
+    name: openplc
+    state: started
+    enabled: true
+  when:
+    - not is_container | bool

@@ -1,5 +1,6 @@
 ---
 # defaults file for openplc
+openplc_version: master
 openplc_restart_sleep_seconds: 60  # amount of time to sleep before starting the service when restarting
 openplc_install_force: false
 openplc_deploy_dir: /opt/OpenPLC_v3
@@ -14,3 +15,5 @@ openplc_users_csv_template_dest: /tmp/openplc_users.csv
 
 openplc_hardware_layer: psm_linux
 openplc_hardware_layer_md5: "{{ (openplc_hardware_layer + '\n') | hash('md5') }}"
+
+is_container: false
