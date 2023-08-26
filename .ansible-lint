@@ -1,5 +1,6 @@
+---
+warn_list:
+  - experimental
 exclude_paths:
-    - .github
-    - tests
-skip_list:
-    - role-name
+  - .github
+  - tests
