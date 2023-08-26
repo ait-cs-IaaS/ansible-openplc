@@ -24,6 +24,7 @@
       - git
       - dh-autoreconf
       - make
+      - bison
   register: pkg_result
   until: pkg_result is success
 
